@@ -1,20 +1,21 @@
 import os
 import secrets
-
-
-from flask import Flask, render_template, request, redirect, send_from_directory
 from flask import current_app
 from flask_bcrypt import Bcrypt
 from flask_login import UserMixin, login_user, LoginManager, login_required, logout_user
+from flask import Flask, session, render_template, request, redirect, jsonify
 from flask_mail import Mail, Message
 from flask_sqlalchemy import SQLAlchemy
-from flask_wtf import FlaskForm
-from wtforms import StringField, PasswordField, SubmitField
-from wtforms.validators import InputRequired, Length, ValidationError
+import random
+import string
+import paypalrestsdk
 from config import mail_username, mail_password
 
 
 app = Flask(__name__)
+
+
+
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///test.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SECRET_KEY'] = 'key'
@@ -38,77 +39,71 @@ Login_manager.init_app(app)
 Login_manager.login_view = "login"
 
 
-class Item(db.Model):
+
+
+
+class Branch(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(100), nullable=False)
-    link = db.Column(db.String(100), nullable=False)
-    text = db.Column(db.String(100), nullable=False)
+    email = db.Column(db.Integer, nullable=False)
+    logo = db.Column(db.String(120), default='branch.jpg')
+    operation = db.Column(db.String(100), nullable=False)
+    address = db.Column(db.String(100), nullable=False)
+    token = db.Column(db.String(100), nullable=False)
     isActive = db.Column(db.Boolean, default=True)
-
-class Card(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String(100), nullable=False)
-    link = db.Column(db.String(100), nullable=False)
-    text = db.Column(db.String(100), nullable=False)
-    isActive = db.Column(db.Boolean, default=True)
-
-
-
-
-class Student(UserMixin, db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(100), nullable=False, unique=True)
-    password = db.Column(db.String(128), nullable=False)
-    text = db.Column(db.String(100), default=None)
-    photo = db.Column(db.String(120), default="image.jpg")
-    email = db.Column(db.String(100), default=None)
-    isActive = db.Column(db.Boolean, default=True)
-
-
 
 
     def __repr__(self):
-        return f'<Student {self.username}>'
+        return self.title
+
+
+class Product(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    item = db.Column(db.String(100), nullable=False)
+    value = db.Column(db.Integer, nullable=False)
+    logo = db.Column(db.String(120), default='product.jpg')
+    group = db.Column(db.String(100), nullable=False)
+    store = db.Column(db.String(100), nullable=False)
+    isActive = db.Column(db.Boolean, default=True)
+
+
+    def __repr__(self):
+        return self.title
+
+
+
+
+class User(UserMixin, db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(100), nullable=False)
+    password = db.Column(db.String(128), nullable=False)
+    photo = db.Column(db.String(120), default="image.jpg")
+    email = db.Column(db.String(100), nullable=False, unique=True)
+    isActive = db.Column(db.Boolean, default=True)
+
+
+
+
+
+def __repr__(self):
+    return f'<User {self.username}>'
+
+
 
 def save_images(photo):
     hash_photo = secrets.token_urlsafe(10)
     _, file_extention = os.path.splitext(photo.filename)
     photo_name = hash_photo + file_extention
-    file_path = os.path.join(current_app.root_path, 'static/students', photo_name)
+    file_path = os.path.join(current_app.root_path, 'static/images/users', photo_name)
     photo.save(file_path)
     return photo_name
 
 
-
-class RegisterForm(FlaskForm):
-    username = StringField(validators=[InputRequired(), Length(
-        min=4, max=20)], render_kw={"placeholder": "Username "})
-    password = PasswordField(validators=[InputRequired(), Length(
-        min=4, max=20)], render_kw={"placeholder": "Password"})
-
-    submit = SubmitField("Register")
-
-    def validate_username(self, username):
-        existing_user_username = Student.query.filter_by(username=username.data).first()
-
-        if existing_user_username:
-            raise ValidationError("That username already exists. Please choose a different one.")
-
-
-class LoginForm(FlaskForm):
-    username = StringField(validators=[InputRequired(), Length(
-        min=4, max=20)], render_kw={"placeholder": "Username"})
-    password = PasswordField(validators=[InputRequired(), Length(
-        min=4, max=20)], render_kw={"placeholder": "Password"})
-
-    submit = SubmitField("Login")
-
-
-
-@Login_manager.user_loader
-def load_user(user_id):
-    return Student.query.get(int(user_id))
-
+def get_random_string():
+    # choose from all lowercase letter
+    characters = string.ascii_uppercase + string.digits
+    token = ''.join(random.choice(characters) for i in range(10))
+    return token
 
 
 
@@ -116,12 +111,12 @@ def load_user(user_id):
 @app.route('/contact', methods=['POST', 'GET'])
 def contact():
     if request.method == "POST":
-        name = request.form.get('name')
+        name = request.form.get('username')
         email = request.form.get('email')
         message = request.form.get('message')
 
-        msg = Message(subject=f"Mail from {name}", body=f"Name: {name}\nE-Mail: {email}\nMessage: {message}",
-                      sender=mail_username, recipients=['devacademyspace@outlook.com'])
+        msg = Message(subject=f"Mail from {name}", body=f"Name: {name}\nE-Mail: {email}\n{message}",
+                      sender=mail_username, recipients=['polskoydm@gmail.com'])
         mail.send(msg)
         return render_template('contact.html', success=True)
 
@@ -129,180 +124,239 @@ def contact():
 
 
 
+@app.route('/payment', methods=['POST', 'GET'])
+def payment():
 
+    # Extract the payment information from the link parameters
+
+    token = request.args.get("token")
+    order = request.args.get("order")
+    email = request.args.get("email")
+
+    msg = Message(subject=f"We handle your order {email}", body=f"Order #{order}\nJoin order status here https://wheelsworks.000webhostapp.com/email-done.php?order={order}&token={token}",
+    sender=mail_username)
+    msg.recipients = [str(email)]
+
+    mail.send(msg)
+
+    return render_template('payment.html')
+
+
+
+
+
+@app.route('/newchat', methods=['POST', 'GET'])
+def newchat():
+
+        token = request.args.get("token")
+        email = request.args.get("email")
+
+        msg = Message(subject=f"New Message from {email}", body=f"Join Chat https://wheelsworks.000webhostapp.com/messages.php?token={token}&email={email}",
+        sender=mail_username, recipients=['polskoydm@gmail.com'])
+
+        mail.send(msg)
+        return redirect('https://wheelsworks.000webhostapp.com/messages.php?token='+token+'&email='+email)
+
+
+
+
+@Login_manager.user_loader
+def load_user(user_id):
+    return User.query.get(int(user_id))
 
 
 
 
 @app.route('/', methods=['POST', 'GET'])
 def index():
-    form = LoginForm()
-    if form.validate_on_submit():
-        user = Student.query.filter_by(username=form.username.data).first()
-        if user:
-            if bcrypt.check_password_hash(user.password, form.password.data):
-                login_user(user)
-                return redirect('/dashboard')
-    return render_template('index.html', form=form)
+
+    return render_template('index.html')
+
+@app.route('/cart', methods=['POST', 'GET'])
+def demo():
+
+    return redirect('https://wheelsworks.000webhostapp.com/shopping-cart.php?token=8ZLL5LKCF4')
 
 
+# Login route
+@app.route("/login", methods=['GET', 'POST'])
+def login():
+    if request.method == "POST":
+        password = request.form['password']
+        email = request.form['email']
+        session['email'] = email
 
-@app.route('/<int:id>/edit', methods=['POST', 'GET'])
-def edit(id):
-        student = Student.query.get_or_404(id)
-
-        if request.method == 'POST':
-            username = request.form['username']
-            email = request.form['email']
-            text = request.form['text']
-            photo = save_images(request.files.get('file'))
-            hashed_password = bcrypt.generate_password_hash(request.form['password']).decode('utf-8')
-
-
-
-            student.password = hashed_password
-            student.username = username
-            student.email = email
-            student.text = text
-            student.photo = photo
-
-            db.session.add(student)
-            db.session.commit()
-
+        user = User.query.filter_by(email = email).first()
+        if bcrypt.check_password_hash(user.password, password):
+            login_user(user)
             return redirect('/dashboard')
-
-        return render_template('edit.html', student=student)
-
-
-        user = Student.query.get_or_404(id)
-
-        if request.method == 'POST':
-            about = request.form['about']
-            username = request.form['username']
-            email = request.form['email']
+        else:
+            return 'PASSWORD INCORRECT'
 
 
-            user.about = about
-            user.username = username
-            user.email = email
-
-
-            db.session.add(user)
-            db.session.commit()
-
-            return render_template('register.html', success=True)
-
-        return render_template('edit.html', user=user)
+    return render_template('login.html')
 
 
 
 
 
 
+@app.route('/<path:id>/item', methods=['POST', 'GET'])
+@login_required
+def selectitem(id):
 
 
-@app.route('/admin/<int:id>/delete')
+    rows = Product.query.filter_by(store=id)
+
+    return render_template('item.html', rows=rows, token=id)
+
+
+
+@app.route('/<path:id>/additem', methods=['POST', 'GET'])
+@login_required
+def additem(id):
+
+    if request.method == "POST":
+
+        logo = save_images(request.files.get('file'))
+        item = request.form['title']
+        value = request.form['price']
+        group = request.form['group']
+        token = str(id)
+
+        new_product = Product(item=item, value=value, group=group, store=token, logo=logo)
+
+        db.session.add(new_product)
+        db.session.commit()
+
+        return redirect('https://wheelsworks.000webhostapp.com/additem.php?store='+token+'&file='+logo+'&group='+group+'&value='+value+'&item='+item)
+
+    else:
+
+        return 'ERROR UPLOAD IMAGE'
+
+
+
+
+
+@app.route('/<path:id>/deleteitem', methods=['POST', 'GET'])
 def itemdelete(id):
-    item = Item.query.get_or_404(id)
-    try:
+    if request.method == 'POST':
+        store = request.form['delete']
+        prod = request.form['prod']
+
+        item = Product.query.get_or_404(id)
+        token = str(store)
         db.session.delete(item)
         db.session.commit()
-        return redirect('/admin')
-    except:
-        return "Error"
-
-    return render_template("admin.html", data=item)
 
 
-@app.route('/homepage/<int:id>/delete')
-def carddelete(id):
-    card = Card.query.get_or_404(id)
-    try:
-        db.session.delete(card)
-        db.session.commit()
-        return redirect('/homepage')
-    except:
-        return "Error"
+        return redirect('https://wheelsworks.000webhostapp.com/deleteitem.php?prod='+prod+'&token='+token)
 
-    return render_template("homepage.html", data=card)
+    else:
+
+        return 'ERROR DELETE'
 
 
-@app.route('/adduser/<int:id>/delete')
-def userdelete(id):
-    user = Student.query.get_or_404(id)
-    try:
-        db.session.delete(user)
-        db.session.commit()
-        return redirect('/adduser')
-    except:
-        return "Error"
 
-    return render_template("adduser.html", userlist=user)
+
 
 
 @app.route('/dashboard', methods=['POST', 'GET'])
 @login_required
 def dashboard():
-    items = Item.query.all()
 
-    return render_template('dashboard.html', data=items)
+        email = session['email']
 
+        rows = Branch.query.filter_by(email = email)
 
-
-@app.route('/cards', methods=['POST', 'GET'])
-
-def cards():
-    cards = Card.query.all()
-
-    return render_template('cards.html', data=cards)
+        return render_template('dashboard.html', rows=rows)
 
 
-
-
-@app.route('/homepage', methods=['POST', 'GET'])
+@app.route('/addbranch', methods=['POST', 'GET'])
 @login_required
-def homepage():
-    cards = Card.query.all()
-    if request.method=="POST":
-        title = request.form.get('title')
-        link = request.form.get('link')
-        text = request.form.get('text')
+def addbranch():
 
 
-    try:
-        card = Card(title=title, link=link, text=text)
-        db.session.add(card)
+    if request.method == "POST":
+        token = str(get_random_string())
+        logo = save_images(request.files.get('file'))
+        email = session['email']
+        title = request.form['title']
+        operation = request.form['operation']
+        address = request.form['address']
+
+
+        new_branch = Branch(token=token, title=title, operation=operation, email=email, address=address, logo=logo)
+
+        db.session.add(new_branch)
         db.session.commit()
-        return redirect('/homepage')
 
-    except: "Error"
+        return redirect('https://wheelsworks.000webhostapp.com/addbranch.php?title='+title+'&operation='+operation+'&address='+address+'&logo='+logo+'&email='+email+'&token='+token)
 
-    return render_template('homepage.html', data=cards)
+    else:
 
-
-
+        return 'ERROR UPLOAD IMAGE'
 
 
 
-@app.route('/admin', methods=['POST', 'GET'])
+@app.route('/settings/<int:id>/delete', methods=['POST', 'GET'])
+def branchdelete(id):
+    if request.method == 'POST':
+        delete = request.form['delete']
+        branch = Branch.query.get_or_404(id)
+        db.session.delete(branch)
+        db.session.commit()
+
+
+        return redirect('https://wheelsworks.000webhostapp.com/deletebranch.php?delete='+delete)
+
+    else:
+
+        return 'ERROR DELETE'
+
+
+
+
+@app.route('/settings', methods=['POST', 'GET'])
 @login_required
-def admin():
-    items = Item.query.all()
-    if request.method=="POST":
-        title = request.form.get('title')
-        link = request.form.get('link')
-        text = request.form.get('text')
+def settings():
+
+    email = session['email']
+    rows = Branch.query.filter_by(email = email)
+
+    return render_template('settings.html', rows=rows)
 
 
-    try:
-        item = Item(title=title, link=link, text=text)
-        db.session.add(item)
-        db.session.commit()
-        return redirect('/admin')
 
-    except: "Error"
 
-    return render_template('admin.html', data=items)
+
+
+
+@app.route('/<int:id>/profile', methods=['POST', 'GET'])
+@login_required
+def profile(id):
+        profile = User.query.get_or_404(id)
+
+        if request.method == 'POST':
+
+            username = request.form['username']
+            photo = save_images(request.files.get('file'))
+            hashed_password = bcrypt.generate_password_hash(request.form['password']).decode('utf-8')
+
+            profile.password = hashed_password
+            profile.username = username
+            profile.photo = photo
+
+            db.session.add(profile)
+            db.session.commit()
+
+            return redirect('/settings')
+
+        return render_template('profile.html', profile=profile)
+
+
+
 
 @app.route('/logout', methods=['POST', 'GET'])
 @login_required
@@ -311,37 +365,27 @@ def logout():
     return redirect('/')
 
 
+
+
+
 @app.route('/register', methods=['POST', 'GET'])
 def register():
+
     if request.method == "POST":
-        name = request.form.get('name')
+        username = request.form.get('username')
+        password = request.form.get('password')
         email = request.form.get('email')
-        message = request.form.get('message')
 
-        msg = Message(subject=f"Mail from {name}", body=f"Name: {name}\nE-Mail: {email}\nPassword: {message}",
-                      sender=mail_username, recipients=['devacademyspace@outlook.com'])
-        mail.send(msg)
-        return render_template('register.html', success=True)
-
-
-    return render_template('register.html')
-
-
-@app.route('/adduser', methods=['POST', 'GET'])
-
-def adduser():
-    users = Student.query.all()
-    form = RegisterForm()
-    if form.validate_on_submit():
-        hashed_password = bcrypt.generate_password_hash(form.password.data).decode('utf-8')
-        new_user = Student(username=form.username.data, password=hashed_password)
+        hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
+        new_user = User(username=username, password=hashed_password, email=email)
 
         db.session.add(new_user)
         db.session.commit()
-        return redirect('/adduser')
 
-    return render_template('adduser.html', form=form, userlist=users)
+        return redirect('/login')
 
+
+    return render_template('register.html')
 
 
 
@@ -351,4 +395,3 @@ def adduser():
 
 if __name__ == "__main__":
     app.run(debug=False)
-

@@ -16,22 +16,28 @@
     <link href="static/carousel.css" rel="stylesheet">
   </head>
   <body>
-<div id="container">
-<div id="header">
 
+
+<div id="container">
+    <div id="header">
   <nav class="navbar navbar-expand-lg navbar-light bg-light">
     <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarTogglerDemo03" aria-controls="navbarTogglerDemo03" aria-expanded="false" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
     </button>
-    <a class="navbar-brand" href="/">DEV-Academy-Space</a>
+    <a class="navbar-brand" href="/">Wheels Works</a>
 
     <div class="collapse navbar-collapse" id="navbarTogglerDemo03">
       <ul class="navbar-nav mr-auto mt-2 mt-lg-0">
         <li class="nav-item active">
-          <a class="nav-link" href="/cards">Courses<span class="sr-only">(current)</span></a>
+          <a class="nav-link" href="/cart">Take a Demo</a>
+           <li class="nav-item active">
+          <a class="nav-link" href="/register">Register</a>
         </li>
           <li class="nav-item active">
-          <a class="nav-link " href="/applynow">Apply Now</a>
+          <a class="nav-link" href="/login">Log In</a>
+        </li>
+        <li class="nav-item active">
+      <a class="nav-link " href="/contact">Contact</a>
         </li>
         <li class="nav-item active">
           <a class="nav-link" href="https://academyblog.000webhostapp.com/">Blog</a>
@@ -45,22 +51,31 @@
 </div>
 
 
+    <div style="text-align: center; margin-top: 10%;" id="body">
+        <form style=" display: inline-block;" method="POST" action="/register">
+        {% if success %}
+          <div class="alert alert-success" role="alert">
+            Your registration has been sent successfully,
+            <br> Waiting for approval.
+             </div>
+         {% endif %}
 
-<div style="margin:5rem;" id="body">
-    <h1>Register Page</h1>
-    <a style="text-decoration: none;" class="w3-bar-item w3-button" href="/login">Alredy have an account? Log In</a>
-    <br><br>
-    <form method="POST" action="">
-        {{ form.hidden_tag() }}
-        {{ form.username }}
-        {{ form.password }}
-        <br><br>
-        <button class="btn btn-outline-primary" type="submit">Add User</button>
-    </form>
-    <br>
+
+            <h3>Registration Page</h3>
+
+        <br><br><input type="email" id="email" name="email" placeholder="Email" required>
+
+        <br><br><input type="text" id="username" name="username" placeholder="Full Name" required>
+
+        <br><br><input type="password" id="password" name="password" placeholder="Password" required>
+
+        <br><br><button class="btn btn-outline-primary" type="submit">Submit</button>
+
+        </form>
 
     </div>
 
+</div>
 
 </body>
 </html>

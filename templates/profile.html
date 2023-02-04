@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+
+
+{% block title %}
+<title>Profile</title>
+{% endblock %}
+
+{% block body %}
+<div style="margin:5rem;" id="body">
+     <h2>Edit Profile</h2>
+
+<p><a href="/settings">Go Back</a></p>
+
+    <br>
+
+ </h1>
+    <form method='POST' enctype="multipart/form-data">
+
+
+
+         <label>Email</label><br>
+    <input type="email" name="email" value="{{ profile.email }}" readonly><br>
+
+         <label>Username</label><br>
+            <input type="text" name="username" value="{{ profile.username }}"><br>
+
+         <label>Password</label><br>
+        <input type="password" name="password" placeholder='Enter Password' required><br>
+
+        <label>Image</label><br>
+        <input type="file" name="file" required><br><br>
+
+            <button type="submit">Submit</button>
+
+    </form>
+
+{% endblock %}
+

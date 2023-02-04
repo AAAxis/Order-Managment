@@ -1,0 +1,96 @@
+{% extends 'base.html' %}
+
+{% block title %}
+<title>Dashboard</title>
+{% endblock %}
+
+{% block body %}
+
+
+<div style='display:grid; margin-left:3rem;' class="body">
+
+
+
+     <div class="container">
+
+
+                <div class="row">
+{% for row in rows %}
+
+
+                        <div style="margin:25px;" class="single-publication">
+                            <figure style="width:230px; height:180px;">
+                                <h5 style="padding:10px;">     <a style="text-decoration:none; color: black;" href="#">{{ row.title }}</a></h5>
+                                <a href="https://wheelsworks.000webhostapp.com/shopping-cart.php?token={{row.token}}">
+                                    <img style='width:230px;height:200px;' src="https://www.wheels.works/static/images/users/{{ row.logo }}"
+                                </a>
+                                <ul>
+
+
+                                </ul>
+                            </figure>
+
+                            <div class="publication-content">
+
+                                <ul>
+                                    <li><i class="icofont-star"></i></li>
+                                    <li><i class="icofont-star"></i></li>
+                                    <li><i class="icofont-star"></i></li>
+                                    <li><i class="icofont-star"></i></li>
+                                    <li><i class="icofont-star"></i></li>
+                                </ul>
+
+
+                            </div>
+
+
+                        </div>
+
+                {% endfor %}
+
+
+
+                 <div style="margin:25px;" class="single-publication">
+                            <figure style="width:230px; height:180px;">
+                                <h5 style="padding:10px;">     <a style="text-decoration:none; color: black;" href="/settings">Add New</a></h5>
+                                <a href="/settings">
+                                    <img style='width:230px;height:200px;' src="https://www.wheels.works/static/test.jpeg"
+                                </a>
+                                <ul>
+
+
+                                </ul>
+                            </figure>
+
+                            <div class="publication-content">
+
+                                <ul>
+                                    <li><i class="icofont-star"></i></li>
+                                    <li><i class="icofont-star"></i></li>
+                                    <li><i class="icofont-star"></i></li>
+                                    <li><i class="icofont-star"></i></li>
+                                    <li><i class="icofont-star"></i></li>
+                                </ul>
+
+
+                            </div>
+
+
+                        </div>
+
+                </div>
+
+
+
+
+
+
+
+{% endblock %}
+</table>
+
+
+
+  </div>
+</div>
+
