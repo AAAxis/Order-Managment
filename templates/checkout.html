@@ -1,0 +1,104 @@
+
+{% block content %}
+
+
+
+  <h1>Checkout</h1>
+
+  <div class="checkout-form">
+
+          <p>Order #{{ order_id }}</p>
+
+    <form action="/{{ order_id }}/payment" method="post"  autocomplete="off">
+
+
+      <div class="form-group">
+
+        <label for="email">Email:</label>
+        <input type="email" id="email" name="email" class="form-control" required>
+      </div>
+
+      <div class="form-group">
+        <label for="name">Name:</label>
+        <input type="text" id="name" name="name" class="form-control" required>
+      </div>
+
+      <div class="form-group">
+        <label for="address">Address:</label>
+        <textarea id="address" name="address" class="form-control" required></textarea>
+      </div>
+
+
+      <button type="submit">Place Order</button>
+    </form>
+  </div>
+
+  <style>
+
+  button[type="submit"] {
+  background-color: #007bff;
+  border: none;
+  color: #fff;
+  padding: 12px 24px;
+  border-radius: 4px;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+button[type="submit"]:hover {
+  background-color: #0069d9;
+}
+
+button[type="submit"]:active {
+  background-color: #005cbf;
+}
+
+
+    .checkout-form {
+      max-width: 500px;
+      margin: auto;
+      padding: 20px;
+      background-color: #f7f7f7;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      box-shadow: 0px 0px 10px rgba(0,0,0,0.1);
+    }
+
+    .checkout-form h1 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
+
+    input[type="email"],
+    input[type="text"],
+    textarea {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      font-size: 16px;
+      font-family: inherit;
+      box-sizing: border-box;
+    }
+
+    .paypal-button-container {
+      margin-top: 20px;
+      display: flex;
+      justify-content: center;
+    }
+
+    #paypal-button-container {
+      margin: 0 auto;
+    }
+  </style>
+{% endblock %}

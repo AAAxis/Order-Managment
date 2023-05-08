@@ -8,13 +8,13 @@
 
 
 <div style='margin:3rem; display:flex; align-items:center;' class="row">
-<div style=' width:200px;' class="block">
+<div style=' width:200px; margin-right:5rem;' class="block">
 
   <h3>Create Store</h3>
 
 
-            <form action="/addbranch" target="_self" method="POST"  enctype="multipart/form-data">
-            <label>Merchant Logo</label><br>
+            <form  action="/addbranch" target="_self" method="POST"  enctype="multipart/form-data">
+           <br>
             <input type="file" name="file" required>
             <br><br>
             <input type="text" name="title" placeholder="Merchant Name"  required>
@@ -22,14 +22,6 @@
           <input type="text" name="address" placeholder="Bussines Address"  required>
           <br> <br>
 
-<label>Operation Area</label><br>
-              <select name="operation">
-                <option>Tel Aviv</option>
-                <option>Haifa</option>
-                <option>Ber Sheva</option>
-                <option>Jerusalem</option>
-                 <option>Hertzlia</option>
-            </select><br><br>
 
             <input name="upload" type="submit" value="Submit">
 
@@ -45,10 +37,9 @@
        <tr>
        <th scope="col">ID</th>
        <th scope="col">Logo</th>
-         <th scope="col">Branch</th>
-         <th scope="col">Items</th>
+         <th scope="col">Store</th>
+         <th scope="col">Menu</th>
           <th scope="col">Action</th>
-
 
        </tr>
 
@@ -57,20 +48,13 @@
   <tr>
 
       <td>{{ row.id }}</td>
-
-       <td><img src="https://www.wheels.works/static/images/users/{{ row.logo }}"  width="30" height="30"></td>
-      <td>{{ row.title }}</td>
-                <td><a style='text-decoration:none;'href="/{{ row.token }}/item">Menu</a></td>
-
-
-
-
-
-    <td><form action="/settings/{{ row.id }}/delete" method="POST"> <button name="delete" value="{{ row.logo }}" type="submit">Delete</button></form></td>
+       <td><img src="https://polskoydm.pythonanywhere.com/static/uploads/{{ row.file }}"  width="30" height="30"></td>
+      <td>{{ row.name }}</td>
+    <td><a style='text-decoration:none;'href="/{{ row.token }}/item">Show</i></a></td>
+    <td><form action="/settings/{{ row.id }}/delete" method="POST"> <button style="margin-top:5px;"  name="delete" value="{{ row.file }}" type="submit"><i class="fa fa-trash-o"></i></button></form></td>
 
         </tr>
 
-    </tr>
 {% endfor %}
 
 

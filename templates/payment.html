@@ -2,17 +2,74 @@
 <html>
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<h2>Order Details</h2>
+<p><strong>Email:</strong> {{ order.email }}</p>
+<p><strong>Name:</strong> {{ order.name }}</p>
+<p><strong>Address:</strong> {{ order.address }}</p>
+<p><strong>Total:</strong> {{ order.total }}</p>
+
+
 <style>
-img {
-  display: block;
-  margin-left: auto;
-  margin-right: auto;
+h2 {
+  font-size: 24px;
+  margin-bottom: 16px;
+}
+
+p {
+  font-size: 16px;
+  margin-bottom: 8px;
+}
+
+strong {
+  font-weight: bold;
+}
+
+.order-details {
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 16px;
 }
 </style>
-</head>
-<body>
 
-<img src="https://uploads-ssl.webflow.com/5ef0df6b9272f7410180a013/60c0e28575cd7c21701806fd_q1cunpuhbdreMPFRSFLyfUXNzpqv_I5fz_plwv6gV3sMNXwUSPrq88pC2iJijEV7wERnKXtdTA0eE4HvdnntGo9AHAWn-IcMPKV-rZw1v75vlTEoLF4OdNqsRb7C6r7Mvzrm7fe4.png" alt="Paris" style="width:50%;">
 
+<div class="paypal-button-container">
+          <script src="https://www.paypal.com/sdk/js?client-id=ARMncwmJzuoeXSG82hulypHNqucjFwIfgrfLocUtj16ffuCIUJaWuFuRcqLPBwvkB8uL6QmERjkX2b05&components=buttons"></script>
+
+        <div id="paypal-button-container"></div>
+        <script>
+          paypal.Buttons({
+            createOrder: function(data, actions) {
+              // Set up the transaction
+              return actions.order.create({
+                purchase_units: [{
+                  amount: {
+                    value: '{{ order.total }}'
+                  }
+                }]
+              });
+            },
+                        onApprove: function(data, actions) {
+              // Capture the funds from the transaction
+              return actions.order.capture().then(function(details) {
+                // Call your server to save the transaction
+                return fetch('/paypal-transaction-complete', {
+                  method: 'post',
+                  headers: {
+                    'content-type': 'application/json'
+                  },
+                  body: JSON.stringify({
+                    orderID: data.orderID
+                  })
+                }).then(function() {
+                  // Redirect the user to the thank-you page
+                  window.location.href = '/thank-you?order={{ order.id }}&name={{ order.name }}&address={{ order.address }}&email={{ order.email }}';
+                });
+              });
+            }
+
+          }).render('#paypal-button-container');
+
+        </script>
+      </div>
 </body>
 </html>

@@ -1,2 +1,2 @@
-mail_username = "polskoydm@outlook.com"
-mail_password = "######"
+mail_username = "polskoydm@gmail.com"
+mail_password = "gxgurxhgfmjhxslq"

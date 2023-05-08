@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Barcode Scanner</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  </head>
+  <body>
+      <div style="text-align: center;">
+    <h1>Scan Result</h1>
+    <form method="POST" action="">
+        <label for="name">Name:</label>
+        <input type="text" id="name" name="name" value="{{ product.name }}">
+        <br>
+        <label for="quantity">Quantity:</label>
+        <input type="number" id="quantity" name="quantity" value="{{ product.quantity }}">
+        <br>
+        <label for="price">Price:</label>
+        <input type="number" id="price" name="price" step="0.01" value="{{ product.price }}">
+        <br>
+        <img src="{{ product['image_url'][0] }}" alt="{{ product['name'] }}"  width="200">
+
+        <br>
+        <input type="submit" value="Add To Store">
+    </form>
+</div>
+</body>
+ <style>
+      /* default styles */
+
+
+input[type="text"],
+input[type="number"],
+input[type="file"]{
+
+  display: block;
+margin:auto;
+  padding: 1rem;
+  border-radius: 3px;
+  border: 1px solid #ccc;
+  width: 90%;
+  box-sizing: border-box;
+}
+
+input[type="submit"] {
+  background-color: #4CAF50;
+  border: none;
+  color: white;
+  padding: 20px 20px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  margin-top: 10px;
+  cursor: pointer;
+}
+
+/* mobile styles */
+@media (max-width: 480px) {
+
+  input[type="text"],
+  input[type="number"],
+  input[type="file"] {
+    font-size: 18px;
+    margin-bottom: 5px;
+  }
+
+  input[type="submit"] {
+    font-size: 18px;
+  }
+}
+
+
+  </style>
+</html>

@@ -1,0 +1,82 @@
+{% extends 'base.html' %}
+
+{% block title %}
+<title>Settings</title>
+{% endblock %}
+
+{% block body %}
+
+<style>img { border-radius: 50%;} </style>
+
+<div style='margin:5rem;display:flex; align-items:center;' class="row">
+<div style='width:200px; margin-right:5rem;' class="block">
+
+  <h3>Create Item</h3>
+
+<br>
+            <form action="/{{ id }}/additem" target="_self" method="POST"  enctype="multipart/form-data">
+
+            <input type="file" name="file" required>
+            <br><br>
+            <input type="text" name="title" placeholder="Item Name"  required>
+          <br> <br>
+          <input type="text" name="price" placeholder="Price"  required>
+          <br> <br>
+
+           <input type="text" name="group" placeholder="Description"  required>
+          <br> <br>
+
+            <input name="upload" type="submit" value="Submit">
+
+            </form>
+        </div>
+
+
+                <div style='margin-top:3rem; display:flex; align-items:center;' class="row">
+
+{% for row in rows %}
+
+
+                 <div style="margin:25px;" class="single-publication">
+
+
+
+                                <a href=""><img style='width:150px;height:150px;' src="https://polskoydm.pythonanywhere.com/static/uploads/{{ row.image }}"</a>
+
+
+
+
+
+                             <div class="add-to-cart">
+
+                          <form action="/{{ row.id }}/deleteitem" method="POST">Price: {{ row.price }}$ <br> <input name="prod" type="hidden" value="{{ row.prod }}" require><button name="delete" type="submit" value="{{ id }}"><i class="fa fa-trash" aria-hidden="true"></i></button></form>
+                            </div>
+                        </div>
+
+
+
+{% endfor %}
+            </div>
+
+</table>
+</div>
+
+{% endblock %}
+</table>
+
+
+
+  </div>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+

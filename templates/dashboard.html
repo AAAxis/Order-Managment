@@ -21,14 +21,14 @@
                         <div style="margin:25px;" class="single-publication">
                             <figure style="width:230px; height:180px;">
                                 <h5 style="padding:10px;">     <a style="text-decoration:none; color: black;" href="#">{{ row.title }}</a></h5>
-                                <a href="https://wheelsworks.000webhostapp.com/shopping-cart.php?token={{row.token}}">
-                                    <img style='width:230px;height:200px;' src="https://www.wheels.works/static/images/users/{{ row.logo }}"
+                                <a href="#">
+
+
+                                   <a style='text-decoration:none;' href="/{{ row.token }}/shop"><img style='width:230px;height:200px;' src="https://polskoydm.pythonanywhere.com/static/uploads/{{ row.file }}"</a>
                                 </a>
-                                <ul>
 
-
-                                </ul>
                             </figure>
+
 
                             <div class="publication-content">
 
@@ -43,7 +43,6 @@
 
                             </div>
 
-
                         </div>
 
                 {% endfor %}
@@ -54,12 +53,9 @@
                             <figure style="width:230px; height:180px;">
                                 <h5 style="padding:10px;">     <a style="text-decoration:none; color: black;" href="/settings">Add New</a></h5>
                                 <a href="/settings">
-                                    <img style='width:230px;height:200px;' src="https://www.wheels.works/static/test.jpeg"
+                                    <img style='width:230px;height:200px;' src="https://polskoydm.pythonanywhere.com/static/test.jpeg"
                                 </a>
-                                <ul>
 
-
-                                </ul>
                             </figure>
 
                             <div class="publication-content">
